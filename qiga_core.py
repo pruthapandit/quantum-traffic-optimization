@@ -118,36 +118,68 @@ def apply_rotation_gate(q_pop, classical_pop, fitness_scores, best_plan):
 
     return q_pop
 
-# --- QUICK TEST REGION ---
-if __name__ == "__main__":
-    # 1. Initialize and collapse a test population
-    q_pop = initialize_q_population(pop_size=5, num_lights=9)
-    grid_network = create_base_grid()
+# --- OFFICIAL RUNNER FUNCTION ---
+def run_qiga(generations, pop_size, num_lights, grid):
+    """
+    Orchestrates the complete QIGA evolution cycle over a given horizon.
+    Returns tracking data for comparison runners.
+    """
+    
+    # 1. Initialize population matrices locally
+    q_pop = initialize_q_population(pop_size, num_lights)
+    
+    best_overall_delay = float('inf')
+    best_overall_plan = None
+    delay_history = []
 
-    print("--- STARTING EVOLUTION ---")
-    print("Initial Beta^2 values for first individuals\n", q_pop[0, 1, :] ** 2)
-    print()
-
-    # 2. Run the genetic loop for 10 generations
-    for generation in range(1, 11):
+    # 2. Run the genetic loop
+    for generation in range(1, generations + 1):
         # Collapse probabilities into 0s and 1s
         classical_plans = collapse_wavefunction(q_pop)
 
         # Score them on the NetworkX graph
-        scores, delays = evaluate_fitness(classical_plans, grid_network)
+        scores, delays = evaluate_fitness(classical_plans, grid)
 
-        # Find the champion of this generation
+        # Find the champion of this specific generation
         best_idx = np.argmax(scores)
-        best_plan = classical_plans[best_idx]
+        min_current_delay = delays[best_idx]
+        
+        # Track historical best discovery
+        if min_current_delay < best_overall_delay:
+            best_overall_delay = min_current_delay
+            best_overall_plan = classical_plans[best_idx].copy()
 
-        # Evolve the entire quantum population towards the winner
-        q_pop = apply_rotation_gate(q_pop, classical_plans, scores, best_plan)
+        delay_history.append(best_overall_delay)
 
-    # 3. Print the final results after the 10 generations are completely done
+        # Evolve the entire quantum population towards the generation winner
+        q_pop = apply_rotation_gate(q_pop, classical_plans, scores, classical_plans[best_idx])
+
+    # Return data to outside files, but we also pass local variables back for the summary text!
+    return best_overall_delay, best_overall_plan, delay_history, classical_plans, delays, scores, best_idx, q_pop
+
+# --- MAIN TEST REGION ---
+if __name__ == "__main__":
+    # Standard parameters matching local setup
+    POPSIZE = 5
+    NUMLIGHTS = 9
+    GENERATIONS = 10
+    
+    # Setup test variables exactly like before
+    grid_network = create_base_grid()
+    q_pop_initial = initialize_q_population(pop_size=POPSIZE, num_lights=NUMLIGHTS)
+    
+    print("--- STARTING EVOLUTION ---")
+    print("Initial Beta^2 values for first individuals\n", q_pop_initial[0, 1, :] ** 2)
+    print()
+
+    # Call clean function and unpack all the plotting variables
+    best_delay, best_plan, history, classical_plans, delays, scores, best_idx, final_q_pop = run_qiga(10, 5, 9, grid_network)
+
+    # 3. Print summary layout
     print("--- EVOLUTION COMPLETE ---")
     print("Collapsed Classical Plans from the Final Gen:\n", classical_plans)
     print("\nCalculated Network Delays (in seconds):", delays)
     print("Calculated Fitness Scores (Higher is better)", scores)
 
     print(f"\n🏆 Individual {best_idx + 1} is the Champion with a final delay of {delays[best_idx]}s!")
-    print("\nEvolved Beta^2 values for first individual:\n", q_pop[0, 1, :] ** 2)
+    print("\nEvolved Beta^2 values for first individual:\n", final_q_pop[0, 1, :] ** 2)
