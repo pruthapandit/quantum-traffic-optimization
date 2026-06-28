@@ -118,7 +118,7 @@ def apply_rotation_gate(q_pop, classical_pop, fitness_scores, best_plan):
 
     return q_pop
 
-# --- OFFICIAL RUNNER FUNCTION ---
+# --- Runner Function ---
 def run_qiga(generations, pop_size, num_lights, grid):
     """
     Orchestrates the complete QIGA evolution cycle over a given horizon.
@@ -157,7 +157,7 @@ def run_qiga(generations, pop_size, num_lights, grid):
     # Return data to outside files, but we also pass local variables back for the summary text!
     return best_overall_delay, best_overall_plan, delay_history, classical_plans, delays, scores, best_idx, q_pop
 
-# --- MAIN TEST REGION ---
+# --- Main Test Region ---
 if __name__ == "__main__":
     # Standard parameters matching local setup
     POPSIZE = 5
@@ -181,5 +181,5 @@ if __name__ == "__main__":
     print("\nCalculated Network Delays (in seconds):", delays)
     print("Calculated Fitness Scores (Higher is better)", scores)
 
-    print(f"\n🏆 Individual {best_idx + 1} is the Champion with a final delay of {delays[best_idx]}s!")
+    print(f"\nIndividual {best_idx + 1} is the Champion with a final delay of {delays[best_idx]}s!")
     print("\nEvolved Beta^2 values for first individual:\n", final_q_pop[0, 1, :] ** 2)
