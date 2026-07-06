@@ -41,10 +41,10 @@ if __name__ == "__main__":
 
     grid_network = create_base_grid()
 
-    print("-=- STARTING CLASSICAL RANDOM SEARCH =--")
+    print("--- STARTING CLASSICAL RANDOM SEARCH ---")
     best_delay, best_plan, history = run_classical_random_search(GENERATIONS, POP_SIZE, NUM_LIGHTS, grid_network)
 
     print("\n--- CLASSICAL SEARCH COMPLETE ---")
     print(f"Best Classical Plan Found: {best_plan}")
-    print(f"🏆 Minimum Delay Achieved: {best_delay}s")
+    print(f"Minimum Delay Achieved: {best_delay}s")
     print(f"Delay history over 10 generations: {history}")
